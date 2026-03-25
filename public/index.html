@@ -357,6 +357,137 @@
   .reveal-delay-1 { transition-delay: .1s; }
   .reveal-delay-2 { transition-delay: .2s; }
   .reveal-delay-3 { transition-delay: .3s; }
+
+  /* ── Hamburger (hidden on desktop) ─────────────────────────────────────── */
+  .nav-hamburger {
+    display: none; flex-direction: column; justify-content: center;
+    gap: 5px; background: none; border: none; cursor: pointer;
+    padding: 8px; margin: -8px;
+  }
+  .nav-hamburger span {
+    display: block; width: 22px; height: 2px;
+    background: var(--navy); border-radius: 2px; transition: all .28s ease;
+  }
+  .nav-hamburger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+  .nav-hamburger.open span:nth-child(2) { opacity: 0; transform: scaleX(0); }
+  .nav-hamburger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+  /* ── Mobile nav drawer ──────────────────────────────────────────────────── */
+  .nav-drawer {
+    display: none; position: fixed; inset: 64px 0 0 0; z-index: 99;
+    background: white; flex-direction: column; padding: 16px 0;
+    border-top: 1px solid var(--border);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+    overflow-y: auto;
+  }
+  .nav-drawer.open { display: flex; }
+  .nav-drawer a {
+    display: block; padding: 16px 28px; font-size: 17px; font-weight: 600;
+    color: var(--black); text-decoration: none;
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-drawer a:hover { background: var(--grey-lt); color: var(--blue); }
+  .nav-drawer .drawer-cta {
+    margin: 20px 28px 8px;
+    background: var(--blue); color: white; border: none; padding: 16px;
+    border-radius: 8px; font-size: 16px; font-weight: 700; cursor: pointer;
+    transition: background .2s;
+  }
+  .nav-drawer .drawer-cta:hover { background: var(--navy); }
+
+  /* ── Responsive ─────────────────────────────────────────────────────────── */
+  @media (max-width: 1024px) {
+    nav { padding: 0 32px; }
+    .nav-links { gap: 20px; }
+    section { padding: 80px 40px; }
+    .compare-grid { grid-template-columns: 200px 1fr 1fr 1fr; }
+  }
+
+  @media (max-width: 768px) {
+    /* Nav */
+    nav { padding: 0 20px; }
+    .nav-links, .nav-cta { display: none; }
+    .nav-hamburger { display: flex; }
+
+    /* Sections */
+    section { padding: 60px 20px; }
+    .section-full { padding: 60px 0; }
+
+    /* Hero */
+    #hero { padding: 100px 20px 60px; min-height: 90vh; }
+    .hero-inner h1 { font-size: clamp(30px, 8vw, 44px); }
+    .hero-sub { font-size: 16px; }
+    .hero-actions { flex-direction: column; }
+    .btn-primary, .btn-secondary { text-align: center; padding: 14px 24px; font-size: 15px; }
+
+    /* Continuum */
+    .continuum-wrap { padding: 28px 20px; }
+    .continuum-quote { font-size: 16px; }
+    .cl-mid { display: none; }
+
+    /* Stats bar */
+    .stats-bar { grid-template-columns: 1fr; }
+    .stat { padding: 28px 24px; }
+    .stat-num { font-size: 40px; }
+
+    /* Comparison — horizontal scroll */
+    #compare { padding: 60px 20px; }
+    .compare-header h2 { font-size: 28px; }
+    .compare-inner { overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 8px; }
+    .compare-grid { min-width: 560px; grid-template-columns: 150px 1fr 1fr 1fr; }
+    .cg-header { font-size: 12px; padding: 14px 10px; }
+    .cg-header.paypal { font-size: 13px; }
+    .badge { display: none; }
+    .cg-cell { font-size: 12px; padding: 14px 10px; }
+    .cg-cell.feat { font-size: 12px; padding: 14px 12px; }
+    .scroll-hint {
+      display: block; text-align: center; font-size: 12px;
+      color: var(--grey); margin-bottom: 12px; font-style: italic;
+    }
+
+    /* Journey */
+    #journey { padding: 60px 20px !important; }
+    .journey-inner { padding: 0 !important; }
+    .journey-header h2 { font-size: 28px; }
+    .journey-steps { grid-template-columns: 1fr; gap: 0; }
+    .journey-steps::before { display: none; }
+    .journey-step {
+      text-align: left; display: flex; gap: 20px; padding: 24px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .journey-step:last-child { border-bottom: none; }
+    .step-icon { width: 56px; height: 56px; font-size: 22px; flex-shrink: 0; margin: 0; }
+    .step-content { flex: 1; }
+
+    /* Funnel */
+    #funnel { padding: 60px 0 !important; }
+    .funnel-inner { padding: 0 20px !important; }
+    .funnel-grid { display: block !important; }
+    .funnel-grid > div:first-child { margin-bottom: 32px; max-width: 300px; margin-left: auto; margin-right: auto; }
+    .funnel-card.active, .funnel-card:hover { transform: none; }
+
+    /* RTP */
+    #rtp { padding: 60px 0 !important; }
+    .rtp-inner { padding: 0 20px !important; }
+    .rtp-grid { grid-template-columns: 1fr; gap: 24px; }
+    #rtp h2 { font-size: 28px; }
+    .rtp-col:hover { transform: none; box-shadow: 0 4px 24px rgba(0,0,0,0.07); }
+
+    /* CTA */
+    #cta { padding: 60px 20px !important; }
+    #cta h2 { font-size: 30px !important; }
+    #cta p  { font-size: 15px !important; }
+    .btn-white { width: 100%; max-width: 320px; padding: 16px 24px; font-size: 15px; }
+
+    /* Footer */
+    footer { padding: 24px 20px; flex-direction: column; gap: 6px; text-align: center; }
+  }
+
+  @media (max-width: 480px) {
+    .hero-inner h1 { font-size: 28px; }
+    .compare-grid { min-width: 480px; grid-template-columns: 120px 1fr 1fr 1fr; }
+    .cg-cell, .cg-cell.feat { font-size: 11px; padding: 12px 8px; }
+  }
 </style>
 </head>
 <body>
@@ -378,7 +509,19 @@
     <li><a href="#rtp">Why PayPal</a></li>
   </ul>
   <button class="nav-cta" onclick="document.getElementById('cta').scrollIntoView({behavior:'smooth'})">Become a Partner</button>
+  <button class="nav-hamburger" id="hamburger" aria-label="Menu" onclick="toggleMenu()">
+    <span></span><span></span><span></span>
+  </button>
 </nav>
+
+<!-- Mobile nav drawer -->
+<div class="nav-drawer" id="nav-drawer">
+  <a href="#continuum"  onclick="closeMenu()">The Ambition</a>
+  <a href="#compare"    onclick="closeMenu()">vs. Competition</a>
+  <a href="#journey"    onclick="closeMenu()">Partner Journey</a>
+  <a href="#rtp"        onclick="closeMenu()">Why PayPal</a>
+  <button class="drawer-cta" onclick="closeMenu();document.getElementById('cta').scrollIntoView({behavior:'smooth'})">Become a Partner</button>
+</div>
 
 <!-- ── HERO ────────────────────────────────────────────────────────────────── -->
 <section id="hero">
@@ -445,6 +588,7 @@
       <p style="color:var(--grey);margin-top:12px;font-size:16px">Evaluated across what actually matters to vertical SaaS partners.</p>
     </div>
 
+    <p class="scroll-hint" style="display:none">← Scroll to compare →</p>
     <div class="compare-grid reveal">
       <!-- Headers -->
       <div class="cg-header feature">Capability</div>
@@ -522,45 +666,33 @@
 
     <div class="journey-steps">
       <div class="journey-step reveal">
-        <div class="step-icon navy">
-          🛒
-          <span class="step-num">1</span>
+        <div class="step-icon navy">🛒<span class="step-num">1</span></div>
+        <div class="step-content">
+          <div class="step-brand">Treatwell Marketplace</div>
+          <div class="step-title">Online Booking</div>
+          <div class="step-desc">Consumer discovers and books a haircut on the Treatwell marketplace. Deposit payment offered via multiple options.</div>
+          <span class="step-highlight">PayPal Branded Checkout</span>
         </div>
-        <div class="step-brand">Treatwell Marketplace</div>
-        <div class="step-title">Online Booking</div>
-        <div class="step-desc">
-          Consumer discovers and books a haircut on the Treatwell marketplace.
-          Deposit payment offered via multiple options.
-        </div>
-        <span class="step-highlight">PayPal Branded Checkout</span>
       </div>
 
       <div class="journey-step reveal reveal-delay-1">
-        <div class="step-icon blue">
-          💬
-          <span class="step-num">2</span>
+        <div class="step-icon blue">💬<span class="step-num">2</span></div>
+        <div class="step-content">
+          <div class="step-brand">Direct Engagement</div>
+          <div class="step-title">Barber Relationship</div>
+          <div class="step-desc">Consumer proceeds to engage directly with the barber. Trust is established. Service is delivered.</div>
+          <span class="step-highlight">Off-Platform</span>
         </div>
-        <div class="step-brand">Direct Engagement</div>
-        <div class="step-title">Barber Relationship</div>
-        <div class="step-desc">
-          Consumer proceeds to engage directly with the barber.
-          Trust is established. Service is delivered.
-        </div>
-        <span class="step-highlight">Off-Platform</span>
       </div>
 
       <div class="journey-step reveal reveal-delay-2">
-        <div class="step-icon lt">
-          📱
-          <span class="step-num">3</span>
+        <div class="step-icon lt">📱<span class="step-num">3</span></div>
+        <div class="step-content">
+          <div class="step-brand">In-Store Payment</div>
+          <div class="step-title">Terminal & Apple Pay</div>
+          <div class="step-desc">Consumer pays on a PayPal branded terminal. Card on file — but <strong>always chooses Apple Pay</strong>. Frictionless.</div>
+          <span class="step-highlight">PayPal Branded Terminal</span>
         </div>
-        <div class="step-brand">In-Store Payment</div>
-        <div class="step-title">Terminal & Apple Pay</div>
-        <div class="step-desc">
-          Consumer pays on a PayPal branded terminal. Card on file —
-          but <strong>always chooses Apple Pay</strong>. Frictionless.
-        </div>
-        <span class="step-highlight">PayPal Branded Terminal</span>
       </div>
     </div>
 
@@ -590,7 +722,7 @@
   </div>
 
   <!-- Two-column layout: SVG left, cards right -->
-  <div style="display:grid;grid-template-columns:360px 1fr;gap:64px;align-items:start">
+  <div class="funnel-grid" style="display:grid;grid-template-columns:360px 1fr;gap:64px;align-items:start">
 
     <!-- SVG Funnel (redesigned with 3 trapezoids) -->
     <div class="reveal">
@@ -732,6 +864,26 @@
 </footer>
 
 <script>
+// ── Hamburger menu ─────────────────────────────────────────────────────────
+function toggleMenu() {
+  const btn    = document.getElementById('hamburger');
+  const drawer = document.getElementById('nav-drawer');
+  const open   = drawer.classList.toggle('open');
+  btn.classList.toggle('open', open);
+  document.body.style.overflow = open ? 'hidden' : '';
+}
+function closeMenu() {
+  document.getElementById('hamburger').classList.remove('open');
+  document.getElementById('nav-drawer').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+// ── Show scroll hint on mobile ──────────────────────────────────────────────
+if (window.innerWidth <= 768) {
+  const hint = document.querySelector('.scroll-hint');
+  if (hint) hint.style.display = 'block';
+}
+
 // ── Scroll reveal ──────────────────────────────────────────────────────────
 const observer = new IntersectionObserver((entries) => {
   entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
