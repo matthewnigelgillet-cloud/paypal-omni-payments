@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: paypal-omni-payments
+    runtime: static
+    staticPublishPath: .
+    buildCommand: ""
+    plan: free
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
