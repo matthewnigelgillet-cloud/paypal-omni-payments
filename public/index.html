@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PayPal Omni Payments — Partner Strategy</title>
+<style>
+  /* ── Reset & base ───────────────────────────────────────────────────── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --navy:    #003087;
+    --blue:    #0070E0;
+    --blue-lt: #005BB5;
+    --black:   #000000;
+    --white:   #FFFFFF;
+    --grey:    #767676;
+    --grey-lt: #F5F7FA;
+    --border:  #E0E0E0;
+    --font:    'Helvetica Neue', Arial, sans-serif;
+    --ease:    cubic-bezier(.22,.68,0,1.2);
+  }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: var(--font);
+    background: var(--white);
+    color: var(--black);
+    overflow-x: hidden;
+  }
+  h1,h2,h3,h4 { line-height: 1.15; letter-spacing: -0.02em; }
+  p { line-height: 1.65; color: #333; }
+
+  /* ── Nav ──────────────────────────────────────────────────────────────── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 60px;
+    height: 64px;
+    background: rgba(255,255,255,0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-logo { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 18px; color: var(--navy); }
+  .nav-logo svg { width: 28px; height: 28px; }
+  .nav-links { display: flex; gap: 32px; list-style: none; }
+  .nav-links a { text-decoration: none; font-size: 14px; color: #555; font-weight: 500; transition: color .2s; }
+  .nav-links a:hover { color: var(--blue); }
+  .nav-cta {
+    background: var(--blue); color: white; border: none; padding: 10px 24px;
+    border-radius: 6px; font-size: 14px; font-weight: 600; cursor: pointer;
+    transition: background .2s, transform .15s;
+  }
+  .nav-cta:hover { background: var(--navy); transform: translateY(-1px); }
+
+  /* ── Section shell ───────────────────────────────────────────────────── */
+  section { padding: 100px 60px; max-width: 1200px; margin: 0 auto; }
+  .section-full { max-width: none; padding: 100px 0; }
+  .label {
+    display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: .12em;
+    text-transform: uppercase; color: var(--blue); margin-bottom: 16px;
+    padding: 4px 12px; background: #E8F3FC; border-radius: 20px;
+  }
+
+  /* ── Hero ───────────────────────────────────────────────────────────────── */
+  #hero {
+    min-height: 100vh; display: flex; flex-direction: column;
+    justify-content: center; padding-top: 120px;
+    background: linear-gradient(160deg, #fff 55%, #EBF4FF 100%);
+    max-width: none;
+    padding-left: 60px; padding-right: 60px;
+    position: relative; overflow: hidden;
+  }
+  #hero::before {
+    content: ''; position: absolute; top: -200px; right: -200px;
+    width: 700px; height: 700px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(0,112,224,0.08) 0%, transparent 70%);
+  }
+  .hero-inner { max-width: 820px; position: relative; }
+  .hero-inner h1 {
+    font-size: clamp(36px, 5vw, 62px);
+    font-weight: 800;
+    line-height: 1.08;
+    color: var(--black);
+    margin-bottom: 24px;
+  }
+  .hero-inner h1 em {
+    font-style: normal;
+    background: linear-gradient(90deg, var(--blue), var(--navy));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .hero-sub {
+    font-size: 20px; color: var(--grey); max-width: 560px; margin-bottom: 40px;
+    line-height: 1.6;
+  }
+  .hero-actions { display: flex; gap: 16px; flex-wrap: wrap; }
+  .btn-primary {
+    background: var(--blue); color: white; border: none; padding: 16px 32px;
+    border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer;
+    transition: all .2s var(--ease); text-decoration: none; display: inline-block;
+  }
+  .btn-primary:hover { background: var(--navy); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,112,224,0.3); }
+  .btn-secondary {
+    background: transparent; color: var(--navy); border: 2px solid var(--navy);
+    padding: 14px 30px; border-radius: 8px; font-size: 16px; font-weight: 600;
+    cursor: pointer; transition: all .2s; text-decoration: none; display: inline-block;
+  }
+  .btn-secondary:hover { background: var(--navy); color: white; transform: translateY(-2px); }
+
+  /* ── Continuum ─────────────────────────────────────────────────────────── */
+  #continuum { padding-top: 40px; }
+  .continuum-wrap {
+    background: var(--grey-lt); border-radius: 16px; padding: 48px 60px;
+    border: 1px solid var(--border);
+  }
+  .continuum-track { position: relative; margin: 40px 0 20px; }
+  .continuum-line {
+    height: 6px; background: var(--border); border-radius: 3px; position: relative;
+  }
+  .continuum-fill {
+    position: absolute; left: 0; top: 0; height: 100%;
+    background: linear-gradient(90deg, var(--navy), var(--blue));
+    border-radius: 3px; width: 22%; transition: width 1.2s var(--ease);
+  }
+  .continuum-marker {
+    position: absolute; top: 50%; transform: translate(-50%, -50%);
+    width: 22px; height: 22px; border-radius: 50%;
+    background: var(--blue); border: 3px solid white;
+    box-shadow: 0 0 0 3px var(--blue), 0 4px 12px rgba(0,112,224,0.4);
+    left: 22%; transition: left 1.2s var(--ease);
+    cursor: pointer;
+  }
+  .continuum-marker:hover { transform: translate(-50%, -50%) scale(1.3); }
+  .continuum-ticks { display: flex; justify-content: space-between; position: absolute; top: 0; left: 0; right: 0; }
+  .tick { width: 2px; height: 12px; background: #ccc; border-radius: 1px; position: relative; top: -3px; }
+  .continuum-labels {
+    display: flex; justify-content: space-between; margin-top: 16px;
+  }
+  .cl { font-size: 13px; font-weight: 700; color: var(--navy); text-transform: uppercase; letter-spacing: .06em; }
+  .cl-mid { font-size: 11px; color: var(--grey); font-style: italic; }
+  .continuum-quote {
+    font-size: 22px; font-weight: 700; color: var(--black);
+    line-height: 1.35; margin-bottom: 32px; max-width: 800px;
+    border-left: 4px solid var(--blue); padding-left: 20px;
+  }
+
+  /* ── Stats bar ─────────────────────────────────────────────────────────── */
+  .stats-bar {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px;
+    background: var(--border); border: 1px solid var(--border); border-radius: 12px;
+    overflow: hidden; margin-top: 60px;
+  }
+  .stat {
+    background: white; padding: 36px 40px;
+    text-align: center; transition: background .2s;
+  }
+  .stat:hover { background: #f0f7ff; }
+  .stat-num {
+    font-size: 48px; font-weight: 800; color: var(--blue);
+    display: block; line-height: 1;
+  }
+  .stat-label { font-size: 14px; color: var(--grey); margin-top: 8px; }
+
+  /* ── Comparison table ──────────────────────────────────────────────────── */
+  #compare { background: var(--grey-lt); padding: 100px 60px; max-width: none; }
+  .compare-inner { max-width: 1200px; margin: 0 auto; }
+  .compare-header { text-align: center; margin-bottom: 60px; }
+  .compare-header h2 { font-size: 42px; font-weight: 800; }
+
+  .compare-toggle {
+    display: flex; justify-content: center; gap: 8px; margin-bottom: 48px;
+  }
+  .toggle-btn {
+    padding: 10px 24px; border-radius: 24px; font-size: 14px; font-weight: 600;
+    border: 2px solid var(--border); background: white; cursor: pointer;
+    transition: all .2s; color: #555;
+  }
+  .toggle-btn.active { background: var(--blue); border-color: var(--blue); color: white; }
+
+  .compare-grid {
+    display: grid; grid-template-columns: 260px 1fr 1fr 1fr; gap: 0;
+    border: 1px solid var(--border); border-radius: 16px; overflow: hidden;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.06);
+  }
+  .cg-header {
+    padding: 24px 20px; font-weight: 700; font-size: 16px;
+    text-align: center; border-bottom: 2px solid var(--border);
+  }
+  .cg-header.paypal { background: var(--blue); color: white; font-size: 18px; }
+  .cg-header.paypal .badge {
+    display: inline-block; background: rgba(255,255,255,0.25);
+    font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 10px;
+    margin-left: 8px; vertical-align: middle; letter-spacing: .06em;
+  }
+  .cg-header.stripe { background: #635BFF; color: white; }
+  .cg-header.adyen  { background: #0ABF53; color: white; }
+  .cg-header.feature { background: white; text-align: left; color: var(--navy); padding-left: 28px; }
+
+  .cg-row { display: contents; }
+  .cg-cell {
+    padding: 18px 20px; border-bottom: 1px solid var(--border);
+    font-size: 14px; text-align: center; background: white;
+    transition: background .15s;
+  }
+  .cg-cell:hover { background: #fafbff; }
+  .cg-cell.feat { text-align: left; font-weight: 600; color: var(--black); padding-left: 28px; background: var(--grey-lt); }
+  .cg-cell.paypal { background: #f0f7ff; }
+  .win  { color: #12A24A; font-weight: 700; }
+  .lose { color: #CC0000; }
+  .mid  { color: #E67E22; font-weight: 600; }
+  .check::before { content: '✓ '; }
+  .cross::before { content: '✗ '; }
+  .dash::before  { content: '~ '; }
+
+  /* ── Journey section ────────────────────────────────────────────────────── */
+  #journey { padding: 100px 60px; max-width: none; background: white; }
+  .journey-inner { max-width: 1100px; margin: 0 auto; }
+  .journey-header { margin-bottom: 60px; }
+  .journey-header h2 { font-size: 42px; font-weight: 800; }
+
+  .journey-steps {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 0;
+    position: relative;
+  }
+  .journey-steps::before {
+    content: '';
+    position: absolute; top: 36px; left: 16.6%; right: 16.6%; height: 3px;
+    background: linear-gradient(90deg, var(--navy), var(--blue), var(--blue-lt));
+    z-index: 0;
+  }
+  .journey-step {
+    padding: 0 24px; text-align: center; position: relative; z-index: 1;
+  }
+  .step-icon {
+    width: 72px; height: 72px; border-radius: 50%; display: flex;
+    align-items: center; justify-content: center; margin: 0 auto 20px;
+    font-size: 28px; position: relative; border: 3px solid white;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+    transition: transform .3s var(--ease);
+    cursor: default;
+  }
+  .step-icon:hover { transform: scale(1.15) translateY(-4px); }
+  .step-icon.navy { background: var(--navy); }
+  .step-icon.blue { background: var(--blue); }
+  .step-icon.lt   { background: var(--blue-lt); }
+  .step-num {
+    position: absolute; top: -6px; right: -6px;
+    width: 22px; height: 22px; background: white; border-radius: 50%;
+    font-size: 11px; font-weight: 800; color: var(--navy);
+    display: flex; align-items: center; justify-content: center;
+    border: 2px solid var(--blue);
+  }
+  .step-brand {
+    font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
+    color: var(--blue); margin-bottom: 6px;
+  }
+  .step-title { font-size: 17px; font-weight: 700; margin-bottom: 8px; }
+  .step-desc { font-size: 13px; color: var(--grey); line-height: 1.55; }
+  .step-highlight {
+    display: inline-block; margin-top: 10px; padding: 4px 12px;
+    background: #E8F3FC; color: var(--blue); border-radius: 4px;
+    font-size: 12px; font-weight: 700;
+  }
+
+  /* ── Funnel section ─────────────────────────────────────────────────────── */
+  #funnel { background: var(--grey-lt); padding: 100px 60px; max-width: none; }
+  .funnel-inner { max-width: 1100px; margin: 0 auto; }
+  .funnel-svg-wrap { position: relative; }
+  .funnel-svg { width: 100%; height: auto; }
+  .funnel-tier {
+    cursor: pointer; transition: opacity .2s;
+  }
+  .funnel-tier:hover { opacity: 0.88; }
+  .funnel-tier-label { font-family: 'Helvetica Neue', Arial, sans-serif; font-weight: 700; fill: white; font-size: 15px; pointer-events: none; }
+
+  .funnel-cards { display: flex; flex-direction: column; gap: 0; }
+  .funnel-card {
+    padding: 28px 32px; border-left: 4px solid transparent;
+    background: white; cursor: pointer;
+    transition: all .25s;
+    border-bottom: 1px solid var(--border);
+  }
+  .funnel-card:first-child { border-radius: 12px 12px 0 0; }
+  .funnel-card:last-child  { border-radius: 0 0 12px 12px; border-bottom: none; }
+  .funnel-card.active, .funnel-card:hover { transform: translateX(6px); box-shadow: -6px 0 0 0 var(--blue); }
+  .funnel-card.t0.active, .funnel-card.t0:hover { box-shadow: -6px 0 0 0 var(--navy); }
+  .funnel-card.t2.active, .funnel-card.t2:hover { box-shadow: -6px 0 0 0 var(--blue-lt); }
+  .fc-tag { font-size: 10px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; margin-bottom: 6px; }
+  .fc-tag.t0 { color: var(--navy); }
+  .fc-tag.t1 { color: var(--blue); }
+  .fc-tag.t2 { color: var(--blue-lt); }
+  .fc-title { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+  .fc-body { font-size: 14px; color: var(--grey); line-height: 1.6; }
+
+  /* ── Right to Play / Win ────────────────────────────────────────────────── */
+  #rtp { padding: 100px 60px; max-width: none; background: white; }
+  .rtp-inner { max-width: 1100px; margin: 0 auto; }
+  .rtp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; margin-top: 56px; }
+  .rtp-col {
+    border-radius: 12px; overflow: hidden;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.07);
+    transition: transform .3s var(--ease), box-shadow .3s;
+  }
+  .rtp-col:hover { transform: translateY(-4px); box-shadow: 0 16px 48px rgba(0,0,0,0.12); }
+  .rtp-header {
+    padding: 28px 32px; color: white; position: relative; overflow: hidden;
+  }
+  .rtp-header::before {
+    content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 5px;
+  }
+  .rtp-header.play { background: var(--navy); }
+  .rtp-header.play::before { background: var(--blue); }
+  .rtp-header.win  { background: var(--blue); }
+  .rtp-header.win::before  { background: var(--navy); }
+  .rtp-header h3 { font-size: 20px; font-weight: 800; letter-spacing: .06em; }
+  .rtp-header p  { font-size: 13px; opacity: .75; margin-top: 4px; }
+  .rtp-bullets { background: white; padding: 8px 0; }
+  .rtp-bullet {
+    padding: 18px 28px; border-bottom: 1px solid var(--border);
+    display: flex; gap: 14px; align-items: flex-start;
+    transition: background .15s;
+  }
+  .rtp-bullet:last-child { border-bottom: none; }
+  .rtp-bullet:hover { background: var(--grey-lt); }
+  .rtp-dot {
+    width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; margin-top: 6px;
+  }
+  .dot-navy { background: var(--navy); }
+  .dot-blue { background: var(--blue); }
+  .rtp-bullet p { font-size: 14px; line-height: 1.6; color: #333; margin: 0; }
+
+  /* ── CTA ──────────────────────────────────────────────────────────────────── */
+  #cta {
+    background: linear-gradient(135deg, var(--navy) 0%, var(--blue) 100%);
+    padding: 100px 60px; text-align: center; max-width: none;
+  }
+  #cta h2 { font-size: 48px; font-weight: 800; color: white; margin-bottom: 16px; }
+  #cta p  { font-size: 18px; color: rgba(255,255,255,0.75); margin-bottom: 40px; max-width: 560px; margin-left: auto; margin-right: auto; }
+  .btn-white {
+    background: white; color: var(--navy); border: none; padding: 18px 40px;
+    border-radius: 8px; font-size: 17px; font-weight: 700; cursor: pointer;
+    transition: all .2s var(--ease);
+  }
+  .btn-white:hover { transform: translateY(-3px); box-shadow: 0 12px 32px rgba(0,0,0,0.25); }
+
+  /* ── Footer ───────────────────────────────────────────────────────────────── */
+  footer {
+    padding: 32px 60px; border-top: 1px solid var(--border);
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 13px; color: var(--grey);
+  }
+
+  /* ── Scroll-reveal ───────────────────────────────────────────────────────── */
+  .reveal {
+    opacity: 0; transform: translateY(28px);
+    transition: opacity .7s ease, transform .7s ease;
+  }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+  .reveal-delay-1 { transition-delay: .1s; }
+  .reveal-delay-2 { transition-delay: .2s; }
+  .reveal-delay-3 { transition-delay: .3s; }
+</style>
+</head>
+<body>
+
+<!-- ── NAV ─────────────────────────────────────────────────────────────────── -->
+<nav>
+  <div class="nav-logo">
+    <svg viewBox="0 0 32 32" fill="none">
+      <circle cx="16" cy="16" r="16" fill="#003087"/>
+      <path d="M21 10H14c-.6 0-1 .4-1.1.9L11 22h3l.6-3.8H18c3 0 5.2-1.5 5.7-4.7.5-2.9-1.1-4.5-2.7-4.5z" fill="white" opacity=".7"/>
+      <path d="M12.5 13H9c-.5 0-1 .4-1 .9L6 25h2.8l.7-4.2H13c2.8 0 4.8-1.4 5.3-4.3.4-2.6-1-3.9-5.8-3.5z" fill="white"/>
+    </svg>
+    PayPal Omni
+  </div>
+  <ul class="nav-links">
+    <li><a href="#continuum">The Ambition</a></li>
+    <li><a href="#compare">vs. Competition</a></li>
+    <li><a href="#journey">Partner Journey</a></li>
+    <li><a href="#rtp">Why PayPal</a></li>
+  </ul>
+  <button class="nav-cta" onclick="document.getElementById('cta').scrollIntoView({behavior:'smooth'})">Become a Partner</button>
+</nav>
+
+<!-- ── HERO ────────────────────────────────────────────────────────────────── -->
+<section id="hero">
+  <div class="hero-inner">
+    <span class="label reveal">Omni Payments Strategy 2024</span>
+    <h1 class="reveal reveal-delay-1">
+      The payments partner<br>that <em>converts more</em>,<br>online and in-store.
+    </h1>
+    <p class="hero-sub reveal reveal-delay-2">
+      One integration. Every channel. Better economics than Stripe or Adyen —
+      with the brand trust your customers already have.
+    </p>
+    <div class="hero-actions reveal reveal-delay-3">
+      <a href="#compare" class="btn-primary">See the comparison</a>
+      <a href="#journey" class="btn-secondary">View partner journey</a>
+    </div>
+  </div>
+</section>
+
+<!-- ── CONTINUUM ───────────────────────────────────────────────────────────── -->
+<section id="continuum">
+  <div class="continuum-wrap reveal">
+    <span class="label">Where we are today</span>
+    <p class="continuum-quote">
+      "I want to be an omni payments business that competes with Stripe and Adyen.
+      Both in-store and online."
+    </p>
+    <div class="continuum-track">
+      <div class="continuum-line">
+        <div class="continuum-fill" id="cont-fill"></div>
+        <div class="continuum-marker" id="cont-marker" title="Current position"></div>
+      </div>
+      <div class="continuum-labels">
+        <span class="cl">Aspiration</span>
+        <span class="cl-mid">Current state</span>
+        <span class="cl">Reality</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="stats-bar reveal" style="margin-top:60px">
+    <div class="stat">
+      <span class="stat-num" data-target="3.5">0</span>
+      <span class="stat-label">× higher checkout conversion vs. guest checkout</span>
+    </div>
+    <div class="stat">
+      <span class="stat-num" data-target="35">0</span>
+      <span class="stat-label">countries with in-store + online coverage</span>
+    </div>
+    <div class="stat">
+      <span class="stat-num" data-target="430">0</span>
+      <span class="stat-label">million active PayPal accounts worldwide</span>
+    </div>
+  </div>
+</section>
+
+<!-- ── COMPARISON ──────────────────────────────────────────────────────────── -->
+<div id="compare" class="section-full">
+<section style="padding:0">
+  <div class="compare-inner">
+    <div class="compare-header reveal">
+      <span class="label">Competitive analysis</span>
+      <h2>PayPal vs Stripe vs Adyen</h2>
+      <p style="color:var(--grey);margin-top:12px;font-size:16px">Evaluated across what actually matters to vertical SaaS partners.</p>
+    </div>
+
+    <div class="compare-grid reveal">
+      <!-- Headers -->
+      <div class="cg-header feature">Capability</div>
+      <div class="cg-header paypal">PayPal <span class="badge">RECOMMENDED</span></div>
+      <div class="cg-header stripe">Stripe</div>
+      <div class="cg-header adyen">Adyen</div>
+
+      <!-- Rows -->
+      <div class="cg-cell feat">Brand recognition & consumer trust</div>
+      <div class="cg-cell paypal win check">Highest globally</div>
+      <div class="cg-cell mid dash">Developer-first</div>
+      <div class="cg-cell mid dash">Enterprise B2B</div>
+
+      <div class="cg-cell feat">Online checkout conversion</div>
+      <div class="cg-cell paypal win check">+3.5× vs guest</div>
+      <div class="cg-cell mid dash">No wallet advantage</div>
+      <div class="cg-cell mid dash">No wallet advantage</div>
+
+      <div class="cg-cell feat">In-store (POS) terminal solution</div>
+      <div class="cg-cell paypal win check">Native omni-channel</div>
+      <div class="cg-cell mid dash">Stripe Terminal</div>
+      <div class="cg-cell win check">Strong POS</div>
+
+      <div class="cg-cell feat">Single API for online + offline</div>
+      <div class="cg-cell paypal win check">Unified SDK</div>
+      <div class="cg-cell lose cross">Separate products</div>
+      <div class="cg-cell win check">Unified</div>
+
+      <div class="cg-cell feat">Buy Now Pay Later built-in</div>
+      <div class="cg-cell paypal win check">Pay Later native</div>
+      <div class="cg-cell mid dash">Via Klarna</div>
+      <div class="cg-cell lose cross">Third-party only</div>
+
+      <div class="cg-cell feat">Merchant capital & lending</div>
+      <div class="cg-cell paypal win check">PayPal Working Capital</div>
+      <div class="cg-cell win check">Stripe Capital</div>
+      <div class="cg-cell lose cross">Not available</div>
+
+      <div class="cg-cell feat">Vertical SaaS partner programme</div>
+      <div class="cg-cell paypal win check">Dedicated programme</div>
+      <div class="cg-cell mid dash">Self-serve</div>
+      <div class="cg-cell mid dash">Enterprise deals</div>
+
+      <div class="cg-cell feat">Pricing transparency</div>
+      <div class="cg-cell paypal win check">Public + negotiable</div>
+      <div class="cg-cell win check">Public pricing</div>
+      <div class="cg-cell lose cross">Quote-based</div>
+
+      <div class="cg-cell feat">Developer SDK quality</div>
+      <div class="cg-cell paypal mid dash">Improving rapidly</div>
+      <div class="cg-cell win check">Best in class</div>
+      <div class="cg-cell mid dash">Enterprise-focused</div>
+
+      <div class="cg-cell feat">Financial visibility dashboard</div>
+      <div class="cg-cell paypal win check">Cross-channel reporting</div>
+      <div class="cg-cell mid dash">Dashboard only</div>
+      <div class="cg-cell win check">Full analytics</div>
+    </div>
+  </div>
+</section>
+</div>
+
+<!-- ── PARTNER JOURNEY ─────────────────────────────────────────────────────── -->
+<div id="journey" class="section-full" style="background:white;padding:100px 0">
+<section style="padding:0">
+  <div class="journey-inner">
+    <div class="journey-header reveal">
+      <span class="label">Real-world scenario</span>
+      <h2>The Treatwell partner journey</h2>
+      <p style="color:var(--grey);margin-top:12px;font-size:16px;max-width:600px">
+        How a vertical SaaS marketplace uses PayPal across the entire customer lifecycle —
+        online booking through to in-person payment.
+      </p>
+    </div>
+
+    <div class="journey-steps">
+      <div class="journey-step reveal">
+        <div class="step-icon navy">
+          🛒
+          <span class="step-num">1</span>
+        </div>
+        <div class="step-brand">Treatwell Marketplace</div>
+        <div class="step-title">Online Booking</div>
+        <div class="step-desc">
+          Consumer discovers and books a haircut on the Treatwell marketplace.
+          Deposit payment offered via multiple options.
+        </div>
+        <span class="step-highlight">PayPal Branded Checkout</span>
+      </div>
+
+      <div class="journey-step reveal reveal-delay-1">
+        <div class="step-icon blue">
+          💬
+          <span class="step-num">2</span>
+        </div>
+        <div class="step-brand">Direct Engagement</div>
+        <div class="step-title">Barber Relationship</div>
+        <div class="step-desc">
+          Consumer proceeds to engage directly with the barber.
+          Trust is established. Service is delivered.
+        </div>
+        <span class="step-highlight">Off-Platform</span>
+      </div>
+
+      <div class="journey-step reveal reveal-delay-2">
+        <div class="step-icon lt">
+          📱
+          <span class="step-num">3</span>
+        </div>
+        <div class="step-brand">In-Store Payment</div>
+        <div class="step-title">Terminal & Apple Pay</div>
+        <div class="step-desc">
+          Consumer pays on a PayPal branded terminal. Card on file —
+          but <strong>always chooses Apple Pay</strong>. Frictionless.
+        </div>
+        <span class="step-highlight">PayPal Branded Terminal</span>
+      </div>
+    </div>
+
+    <div style="margin-top:60px;padding:32px 40px;background:var(--grey-lt);border-radius:12px;border-left:4px solid var(--blue)" class="reveal">
+      <strong style="color:var(--navy);font-size:15px;display:block;margin-bottom:8px">
+        Why this matters for partners
+      </strong>
+      <p style="font-size:15px;max-width:780px">
+        PayPal is the only provider that captures <em>both</em> the online deposit and the in-person payment
+        in a single unified ledger — giving Treatwell full financial visibility across every transaction,
+        driving future investment decisions and access to working capital products.
+      </p>
+    </div>
+  </div>
+</section>
+</div>
+
+<!-- ── FUNNEL ───────────────────────────────────────────────────────────────── -->
+<div id="funnel" class="section-full">
+<section style="padding:0">
+<div class="funnel-inner" style="padding:0 60px">
+
+  <!-- Heading: full width above both columns -->
+  <div class="reveal" style="margin-bottom:56px">
+    <span class="label">Partner engagement</span>
+    <h2 style="font-size:42px;font-weight:800">How we win vertical SaaS partners</h2>
+  </div>
+
+  <!-- Two-column layout: SVG left, cards right -->
+  <div style="display:grid;grid-template-columns:360px 1fr;gap:64px;align-items:start">
+
+    <!-- SVG Funnel (redesigned with 3 trapezoids) -->
+    <div class="reveal">
+      <svg viewBox="0 0 300 345" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block">
+
+        <!-- TOP tier: 280px wide → 232px wide over 110px height -->
+        <g class="funnel-tier" id="tier-0" onclick="activateTier(0)" style="cursor:pointer">
+          <polygon points="10,0 290,0 266,110 34,110" fill="#003087"/>
+          <!-- left accent bar -->
+          <rect x="10" y="0" width="6" height="110" fill="#0070E0"/>
+          <text x="153" y="47" text-anchor="middle" font-family="Helvetica Neue,Arial,sans-serif" font-weight="700" font-size="15" fill="white">TOP OF FUNNEL</text>
+          <text x="153" y="70" text-anchor="middle" font-family="Helvetica Neue,Arial,sans-serif" font-size="11" fill="rgba(255,255,255,0.72)">Brand &amp; Credibility</text>
+        </g>
+
+        <!-- MID tier: 232px wide → 180px wide over 105px height -->
+        <g class="funnel-tier" id="tier-1" onclick="activateTier(1)" style="cursor:pointer">
+          <polygon points="34,114 266,114 240,219 60,219" fill="#0070E0"/>
+          <rect x="34" y="114" width="6" height="105" fill="#003087"/>
+          <text x="150" y="160" text-anchor="middle" font-family="Helvetica Neue,Arial,sans-serif" font-weight="700" font-size="15" fill="white">MID FUNNEL</text>
+          <text x="150" y="183" text-anchor="middle" font-family="Helvetica Neue,Arial,sans-serif" font-size="11" fill="rgba(255,255,255,0.72)">Product &amp; Integration</text>
+        </g>
+
+        <!-- BOTTOM tier: 180px wide → 80px wide over 110px height (trapezoid, NOT triangle) -->
+        <g class="funnel-tier" id="tier-2" onclick="activateTier(2)" style="cursor:pointer">
+          <polygon points="60,223 240,223 190,320 110,320" fill="#005BB5"/>
+          <rect x="60" y="223" width="6" height="97" fill="#0049A0"/>
+          <text x="150" y="267" text-anchor="middle" font-family="Helvetica Neue,Arial,sans-serif" font-weight="700" font-size="13" fill="white">BOTTOM OF FUNNEL</text>
+          <text x="150" y="288" text-anchor="middle" font-family="Helvetica Neue,Arial,sans-serif" font-size="10" fill="rgba(255,255,255,0.72)">Commercial Parity</text>
+        </g>
+
+        <!-- Pointed cap -->
+        <polygon points="110,323 190,323 150,343 150,343" fill="#003E8E"/>
+
+      </svg>
+      <p style="text-align:center;font-size:13px;color:var(--grey);margin-top:10px">Click a tier to explore</p>
+    </div>
+
+    <!-- Cards -->
+    <div class="funnel-cards reveal reveal-delay-1" id="funnel-cards">
+      <div class="funnel-card t0 active" onclick="activateTier(0)">
+        <div class="fc-tag t0">Brand &amp; Credibility</div>
+        <div class="fc-title">Top of Funnel</div>
+        <div class="fc-body">I'm a credible brand that will open doors with vertical SaaS partners. PayPal's consumer recognition translates directly into partner confidence.</div>
+      </div>
+      <div class="funnel-card t1" onclick="activateTier(1)">
+        <div class="fc-tag t1">Product &amp; Integration</div>
+        <div class="fc-title">Mid Funnel</div>
+        <div class="fc-body">I provide all the online and offline payment APIs and SDKs required — partners can rely on PayPal as their single payments partner, online and in-store.</div>
+      </div>
+      <div class="funnel-card t2" onclick="activateTier(2)">
+        <div class="fc-tag t2">Commercial Parity</div>
+        <div class="fc-title">Bottom of Funnel</div>
+        <div class="fc-body">I am equivalent in price or cheaper. I am as reliable. Commercial parity removes the last barrier to choosing PayPal over Stripe or Adyen.</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+</section>
+</div>
+
+<!-- ── RIGHT TO PLAY / WIN ──────────────────────────────────────────────────── -->
+<div id="rtp" style="padding:100px 0;background:white">
+<section style="padding:0">
+  <div class="rtp-inner" style="max-width:1100px;margin:0 auto;padding:0 60px">
+    <div class="reveal">
+      <span class="label">Competitive positioning</span>
+      <h2 style="font-size:42px;font-weight:800">Right to Play vs Right to Win</h2>
+      <p style="color:var(--grey);margin-top:12px;font-size:16px;max-width:620px">
+        Getting to parity earns the meeting. Superior economics and ecosystem close the deal.
+      </p>
+    </div>
+
+    <div class="rtp-grid">
+      <!-- Right to Play -->
+      <div class="rtp-col reveal">
+        <div class="rtp-header play">
+          <h3>RIGHT TO PLAY</h3>
+          <p>The minimum bar to be considered</p>
+        </div>
+        <div class="rtp-bullets">
+          <div class="rtp-bullet">
+            <div class="rtp-dot dot-blue"></div>
+            <p>At parity with Stripe and Adyen on payment SDK / API quality.</p>
+          </div>
+          <div class="rtp-bullet">
+            <div class="rtp-dot dot-blue"></div>
+            <p>As reliable as leading payment gateways. 99.9%+ uptime SLA.</p>
+          </div>
+          <div class="rtp-bullet">
+            <div class="rtp-dot dot-blue"></div>
+            <p>Easy to use — developers can build without continual reliance on PayPal account management or technical support.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right to Win -->
+      <div class="rtp-col reveal reveal-delay-1">
+        <div class="rtp-header win">
+          <h3>RIGHT TO WIN</h3>
+          <p>The differentiators that close deals</p>
+        </div>
+        <div class="rtp-bullets">
+          <div class="rtp-bullet">
+            <div class="rtp-dot dot-navy"></div>
+            <p>Converts better than the rest — helping merchants drive higher payment success rates and reduce cart abandonment.</p>
+          </div>
+          <div class="rtp-bullet">
+            <div class="rtp-dot dot-navy"></div>
+            <p>Merchants downstream can access capital and lending products, fuelling business growth through PayPal Working Capital.</p>
+          </div>
+          <div class="rtp-bullet">
+            <div class="rtp-dot dot-navy"></div>
+            <p>Online and offline solution in one — partners gain full financial visibility across operations to drive future investment and insight decisions.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+</div>
+
+<!-- ── CTA ──────────────────────────────────────────────────────────────────── -->
+<div id="cta" style="background:linear-gradient(135deg,#003087 0%,#0070E0 100%);padding:100px 60px;text-align:center">
+  <span class="label reveal" style="background:rgba(255,255,255,0.2);color:white">Ready to partner?</span>
+  <h2 class="reveal" style="font-size:48px;font-weight:800;color:white;margin:16px 0">
+    Let's build omni payments together.
+  </h2>
+  <p class="reveal" style="font-size:18px;color:rgba(255,255,255,0.75);margin-bottom:40px;max-width:520px;margin-left:auto;margin-right:auto">
+    Join the vertical SaaS partners already growing faster with PayPal's unified online and in-store solution.
+  </p>
+  <button class="btn-white reveal reveal-delay-1">Become a Partner Today</button>
+</div>
+
+<!-- ── FOOTER ───────────────────────────────────────────────────────────────── -->
+<footer>
+  <span>© 2024 PayPal, Inc. — Omni Payments Partner Strategy</span>
+  <span style="color:var(--blue);font-weight:600">Internal use only</span>
+</footer>
+
+<script>
+// ── Scroll reveal ──────────────────────────────────────────────────────────
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.12 });
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+// ── Animate continuum marker on load ───────────────────────────────────────
+setTimeout(() => {
+  document.getElementById('cont-fill').style.width = '22%';
+  document.getElementById('cont-marker').style.left = '22%';
+}, 600);
+
+// ── Animate stat counters ──────────────────────────────────────────────────
+const statObserver = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (!e.isIntersecting) return;
+    const el = e.target;
+    const target = parseFloat(el.dataset.target);
+    const isDecimal = target % 1 !== 0;
+    let start = 0;
+    const duration = 1400;
+    const step = (timestamp) => {
+      if (!start) start = timestamp;
+      const progress = Math.min((timestamp - start) / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      const val = eased * target;
+      el.textContent = isDecimal ? val.toFixed(1) + '×' : Math.round(val).toLocaleString() + (target > 100 ? 'M' : '');
+      if (progress < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+    statObserver.unobserve(el);
+  });
+}, { threshold: 0.5 });
+document.querySelectorAll('.stat-num').forEach(el => statObserver.observe(el));
+
+// ── Funnel tier interaction ────────────────────────────────────────────────
+function activateTier(i) {
+  document.querySelectorAll('.funnel-card').forEach((c, j) => {
+    c.classList.toggle('active', i === j);
+  });
+  // Pulse the SVG tier
+  ['tier-0','tier-1','tier-2'].forEach((id, j) => {
+    const g = document.getElementById(id);
+    if (!g) return;
+    g.style.opacity = i === j ? '1' : '0.55';
+  });
+}
+// Init
+activateTier(0);
+</script>
+</body>
+</html>
